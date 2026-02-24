@@ -17,7 +17,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { createLevelSchema } from '@/lib/validators/levels'
 
 interface CreateLevelDialogProps {
@@ -43,11 +52,11 @@ export function CreateLevelDialog({ setId, trigger }: CreateLevelDialogProps) {
         defaultValues: {
           title: '',
           setId,
+          difficulty: 'medium',
         },
       },
     })
 
-  const { register, formState } = form
   const isSubmitting = action.status === 'executing'
   const serverError = action.result.serverError
 
@@ -77,25 +86,58 @@ export function CreateLevelDialog({ setId, trigger }: CreateLevelDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <form className='grid gap-4' onSubmit={handleSubmitWithAction}>
-          <input defaultValue={setId} type='hidden' {...register('setId')} />
-          <div className='grid gap-2'>
-            <label
-              className='text-xs uppercase tracking-[0.2em]'
-              htmlFor='title'
-            >
-              Title
-            </label>
-            <Input
-              id='title'
-              placeholder='Level title'
-              {...register('title')}
-            />
-            {formState.errors.title && (
-              <p className='text-red-600 text-xs'>
-                {formState.errors.title.message}
-              </p>
-            )}
-          </div>
+          <input type='hidden' {...form.register('setId')} value={setId} />
+          <Form {...form}>
+            <div className='grid gap-4'>
+              <FormField
+                control={form.control}
+                name='title'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs uppercase tracking-[0.2em]'>
+                      Title
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder='Level title' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='difficulty'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs uppercase tracking-[0.2em]'>
+                      Difficulty
+                    </FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        className='grid grid-cols-3 gap-2'
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <div className='flex items-center gap-2 border-2 border-border bg-background px-3 py-2 text-sm shadow-shadow'>
+                          <RadioGroupItem value='easy' />
+                          Easy
+                        </div>
+                        <div className='flex items-center gap-2 border-2 border-border bg-background px-3 py-2 text-sm shadow-shadow'>
+                          <RadioGroupItem value='medium' />
+                          Medium
+                        </div>
+                        <div className='flex items-center gap-2 border-2 border-border bg-background px-3 py-2 text-sm shadow-shadow'>
+                          <RadioGroupItem value='hard' />
+                          Hard
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Form>
           <DialogFooter className='gap-2 sm:justify-between'>
             {serverError && (
               <p className='text-red-600 text-xs'>{serverError}</p>

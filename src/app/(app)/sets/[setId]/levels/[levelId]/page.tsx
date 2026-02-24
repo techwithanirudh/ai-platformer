@@ -1,9 +1,6 @@
-import { and, eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { getSession } from '@/server/auth'
-import { db } from '@/server/db'
-import { levels } from '@/server/db/schema/levels'
-import { sets } from '@/server/db/schema/sets'
+import { getLevelWithSet } from '@/server/db/queries'
 import { LevelBuilder } from './_components/level-builder'
 
 interface LevelBuilderPageProps {
@@ -17,28 +14,13 @@ export default async function LevelBuilderPage({
   const session = await getSession()
   const userId = session?.user?.id ?? ''
 
-  const setRows = await db
-    .select()
-    .from(sets)
-    .where(and(eq(sets.id, setId), eq(sets.userId, userId)))
-    .limit(1)
-
-  if (setRows.length === 0) {
+  const levelData = await getLevelWithSet(userId, levelId)
+  if (!levelData || levelData.set.id !== setId) {
     notFound()
   }
 
-  const levelRows = await db
-    .select()
-    .from(levels)
-    .where(and(eq(levels.id, levelId), eq(levels.setId, setId)))
-    .limit(1)
-
-  if (levelRows.length === 0) {
-    notFound()
-  }
-
-  const set = setRows[0]
-  const level = levelRows[0]
+  const set = levelData.set
+  const level = levelData.level
 
   return (
     <div className='flex min-h-[calc(100vh-160px)] flex-col gap-4'>

@@ -1,10 +1,7 @@
-import { and, asc, eq } from 'drizzle-orm'
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import GameCanvas from '@/components/game-canvas'
 import { getSession } from '@/server/auth'
-import { db } from '@/server/db'
-import { levels } from '@/server/db/schema/levels'
-import { sets } from '@/server/db/schema/sets'
+import { getLevelWithSet } from '@/server/db/queries'
 
 interface PlayLevelPageProps {
   params: Promise<{ levelId: string }>
@@ -15,33 +12,13 @@ export default async function PlayLevelPage({ params }: PlayLevelPageProps) {
   const session = await getSession()
   const userId = session?.user?.id ?? ''
 
-  const levelRows = await db
-    .select()
-    .from(levels)
-    .where(eq(levels.id, levelId))
-    .limit(1)
-
-  if (levelRows.length === 0) {
-    notFound()
+  const levelData = await getLevelWithSet(userId, levelId)
+  if (!levelData) {
+    redirect('/')
   }
 
-  const level = levelRows[0]
-
-  const setRows = await db
-    .select()
-    .from(sets)
-    .where(and(eq(sets.id, level.setId), eq(sets.userId, userId)))
-    .limit(1)
-
-  if (setRows.length === 0) {
-    notFound()
-  }
-
-  const orderedLevels = await db
-    .select()
-    .from(levels)
-    .where(eq(levels.setId, level.setId))
-    .orderBy(asc(levels.order))
+  const level = levelData.level
+  const orderedLevels = levelData.levels
 
   const levelList = orderedLevels.map((row) => ({
     levelMap: row.levelMap,

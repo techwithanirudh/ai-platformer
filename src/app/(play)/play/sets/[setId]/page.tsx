@@ -1,10 +1,9 @@
-import { and, asc, eq } from 'drizzle-orm'
-import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import GameCanvas from '@/components/game-canvas'
+import { Button } from '@/components/ui/button'
 import { getSession } from '@/server/auth'
-import { db } from '@/server/db'
-import { levels } from '@/server/db/schema/levels'
-import { sets } from '@/server/db/schema/sets'
+import { getSetWithLevels } from '@/server/db/queries'
 
 interface PlaySetPageProps {
   params: Promise<{ setId: string }>
@@ -15,24 +14,29 @@ export default async function PlaySetPage({ params }: PlaySetPageProps) {
   const session = await getSession()
   const userId = session?.user?.id ?? ''
 
-  const setRows = await db
-    .select()
-    .from(sets)
-    .where(and(eq(sets.id, setId), eq(sets.userId, userId)))
-    .limit(1)
-
-  if (setRows.length === 0) {
-    notFound()
+  const setData = await getSetWithLevels(userId, setId)
+  if (!setData) {
+    redirect('/')
   }
 
-  const levelRows = await db
-    .select()
-    .from(levels)
-    .where(eq(levels.setId, setId))
-    .orderBy(asc(levels.order))
+  const levelRows = setData.levels
 
   if (levelRows.length === 0) {
-    notFound()
+    return (
+      <div className='fixed inset-0 grid place-items-center bg-black p-6'>
+        <div className='grid max-w-xl gap-4 border-2 border-border bg-secondary-background p-8 text-center shadow-shadow'>
+          <h1 className='font-heading text-3xl'>This set has no levels yet</h1>
+          <p className='text-foreground/70 text-sm'>
+            Create a level from Home, then play this set.
+          </p>
+          <div className='flex justify-center'>
+            <Link href='/'>
+              <Button>Back Home</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const levelList = levelRows.map((level) => ({

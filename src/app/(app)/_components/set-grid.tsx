@@ -15,17 +15,17 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-type SetRow = {
+interface SetRow {
   id: string
   name: string
   theme: string
 }
 
-type LevelRow = {
+interface LevelRow {
   id: string
+  order: number
   setId: string
   title: string
-  order: number
 }
 
 interface SetGridProps {
@@ -53,7 +53,7 @@ export function SetGrid({ sets, levels }: SetGridProps) {
   const effectiveSets = deleteSet.optimisticState.sets
   const setIds = new Set(effectiveSets.map((set) => set.id))
   const effectiveLevels = deleteLevel.optimisticState.levels.filter((level) =>
-    setIds.has(level.setId),
+    setIds.has(level.setId)
   )
 
   const grouped = useMemo(() => {
@@ -71,9 +71,9 @@ export function SetGrid({ sets, levels }: SetGridProps) {
           <SetSection
             key={set.id}
             levels={grouped[set.id] ?? []}
-            set={set}
             onDeleteLevel={deleteLevel.execute}
             onDeleteSet={deleteSet.execute}
+            set={set}
             setDeleteStatus={deleteSet.status}
           />
         ))}
@@ -143,7 +143,7 @@ function SetSection({
 
       {levels.length === 0 ? (
         <div className='border-2 border-border bg-background p-6 text-foreground/70 text-sm shadow-shadow'>
-          No levels yet. Create one to get started.
+          No levels yet. Create your first level to start building this set.
         </div>
       ) : (
         <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>

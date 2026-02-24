@@ -16,6 +16,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import type { User } from '@/lib/auth-client'
 import { accountSchema } from '@/lib/validators/account'
@@ -87,7 +95,6 @@ function EditNameDialog({ name }: { name: string }) {
       },
     })
 
-  const { register, formState } = form
   const isSubmitting = action.status === 'executing'
   const serverError = action.result.serverError
 
@@ -115,31 +122,31 @@ function EditNameDialog({ name }: { name: string }) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <form className='grid gap-4' onSubmit={handleSubmitWithAction}>
-          <div className='grid gap-2'>
-            <label
-              className='text-xs uppercase tracking-[0.2em]'
-              htmlFor='name'
-            >
-              Name
-            </label>
-            <Input
-              id='name'
-              maxLength={32}
-              placeholder='Your name'
-              {...register('name')}
+          <Form {...form}>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className='text-xs uppercase tracking-[0.2em]'>
+                    Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input maxLength={32} placeholder='Your name' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {formState.errors.name && (
-              <p className='text-red-600 text-xs'>
-                {formState.errors.name.message}
-              </p>
-            )}
-          </div>
+          </Form>
           <AlertDialogFooter className='gap-2 sm:justify-between'>
             {serverError && (
               <p className='text-red-600 text-xs'>{serverError}</p>
             )}
-            <AlertDialogCancel disabled={isSubmitting} variant='neutral'>
-              Cancel
+            <AlertDialogCancel asChild>
+              <Button disabled={isSubmitting} type='button' variant='neutral'>
+                Cancel
+              </Button>
             </AlertDialogCancel>
             <Button disabled={isSubmitting} type='submit'>
               {isSubmitting ? 'Saving...' : 'Save'}

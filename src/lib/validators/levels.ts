@@ -4,6 +4,7 @@ import { levelSchema } from '@/lib/level-schema'
 export const createLevelSchema = z.object({
   setId: z.string().min(1),
   title: z.string().min(1).max(64),
+  difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
 })
 
 export const updateLevelSchema = z.object({

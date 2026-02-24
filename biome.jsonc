@@ -19,9 +19,9 @@
       "!**/*.md",
       "!**/*.mdx",
       "!components/ui",
+      "!!**/src/components/ui",
       "!**/*.grit"
-    ],
-    "experimentalScannerIgnores": ["src/components/ui/**"]
+    ]
   },
   "css": {
     "parser": {
@@ -98,6 +98,17 @@
         "rules": {
           "suspicious": { "noExplicitAny": "off" },
           "style": { "noParameterAssign": "off" }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/app/(app)/account/_components/account-settings.tsx",
+        "src/components/auth/user-avatar.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "performance": { "noImgElement": "off" }
         }
       }
     }

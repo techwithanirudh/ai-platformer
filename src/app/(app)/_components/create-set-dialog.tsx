@@ -17,6 +17,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { createSetSchema } from '@/lib/validators/sets'
 
@@ -46,7 +54,6 @@ export function CreateSetDialog({ trigger }: CreateSetDialogProps) {
       },
     })
 
-  const { register, formState } = form
   const isSubmitting = action.status === 'executing'
   const serverError = action.result.serverError
 
@@ -76,38 +83,43 @@ export function CreateSetDialog({ trigger }: CreateSetDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <form className='grid gap-4' onSubmit={handleSubmitWithAction}>
-          <div className='grid gap-2'>
-            <label
-              className='text-xs uppercase tracking-[0.2em]'
-              htmlFor='name'
-            >
-              Name
-            </label>
-            <Input id='name' placeholder='Set name' {...register('name')} />
-            {formState.errors.name && (
-              <p className='text-red-600 text-xs'>
-                {formState.errors.name.message}
-              </p>
-            )}
-          </div>
-          <div className='grid gap-2'>
-            <label
-              className='text-xs uppercase tracking-[0.2em]'
-              htmlFor='theme'
-            >
-              Theme (you describe it)
-            </label>
-            <Input
-              id='theme'
-              placeholder='Lava jungle ruins, neon space lab...'
-              {...register('theme')}
-            />
-            {formState.errors.theme && (
-              <p className='text-red-600 text-xs'>
-                {formState.errors.theme.message}
-              </p>
-            )}
-          </div>
+          <Form {...form}>
+            <div className='grid gap-4'>
+              <FormField
+                control={form.control}
+                name='name'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs uppercase tracking-[0.2em]'>
+                      Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder='Set name' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='theme'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs uppercase tracking-[0.2em]'>
+                      Theme (you describe it)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder='Lava jungle ruins, neon space lab...'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Form>
           <DialogFooter className='gap-2 sm:justify-between'>
             {serverError && (
               <p className='text-red-600 text-xs'>{serverError}</p>

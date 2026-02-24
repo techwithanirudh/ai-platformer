@@ -1,24 +1,21 @@
 'use server'
 
-import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { authAction } from '@/lib/safe-action'
 import { createSetSchema } from '@/lib/validators/sets'
-import { db } from '@/server/db'
-import { sets } from '@/server/db/schema/sets'
+import { createSetForUser, deleteSetForUser } from '@/server/db/queries'
 
 export const createSetAction = authAction
   .schema(createSetSchema)
   .action(async ({ parsedInput, ctx }) => {
     const id = crypto.randomUUID()
 
-    await db.insert(sets).values({
+    await createSetForUser({
       id,
       userId: ctx.user.id,
       name: parsedInput.name,
       theme: parsedInput.theme,
-      description: parsedInput.theme,
     })
 
     revalidatePath('/')
@@ -32,9 +29,7 @@ const deleteSetSchema = z.object({
 export const deleteSetAction = authAction
   .schema(deleteSetSchema)
   .action(async ({ parsedInput, ctx }) => {
-    await db
-      .delete(sets)
-      .where(and(eq(sets.id, parsedInput.setId), eq(sets.userId, ctx.user.id)))
+    await deleteSetForUser({ setId: parsedInput.setId, userId: ctx.user.id })
 
     revalidatePath('/')
     return { ok: true }

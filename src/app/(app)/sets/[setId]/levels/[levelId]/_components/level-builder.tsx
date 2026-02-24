@@ -118,7 +118,7 @@ export function LevelBuilder({
     })
   }
 
-  const { defaultLayout, onLayoutChange } = useDefaultLayout({
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `level-builder-${levelId}`,
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   })
@@ -127,8 +127,8 @@ export function LevelBuilder({
     <ResizablePanelGroup
       className='h-full w-full border-2 border-border bg-secondary-background shadow-shadow'
       defaultLayout={defaultLayout}
-      direction='vertical'
-      onLayoutChange={onLayoutChange}
+      onLayoutChanged={onLayoutChanged}
+      orientation='vertical'
     >
       <ResizablePanel defaultSize={50} minSize={35}>
         <div className='h-full w-full border-border border-b-2 bg-black'>

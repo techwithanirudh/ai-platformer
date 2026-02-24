@@ -351,6 +351,13 @@ export function StartGame(canvas: HTMLCanvasElement) {
     // HUD
     let coins = startCoins
 
+    k.add([
+      k.rect(170, 34),
+      k.pos(14, 10),
+      k.fixed(),
+      k.color(0, 0, 0),
+      k.opacity(0.45),
+    ])
     const coinsLabel = k.add([
       k.text(`COINS: ${coins}`, { size: 24 }),
       k.pos(24, 16),
@@ -359,19 +366,18 @@ export function StartGame(canvas: HTMLCanvasElement) {
     ])
 
     k.add([
+      k.rect(190, 28),
+      k.pos(k.width() - 206, 10),
+      k.fixed(),
+      k.color(0, 0, 0),
+      k.opacity(0.45),
+    ])
+    k.add([
       k.text(isAiLevel ? 'AI LEVEL' : `LEVEL ${levelId + 1}`, { size: 16 }),
       k.pos(k.width() - 16, 16),
       k.anchor('topright'),
       k.fixed(),
       k.color(theme.accentColor.r, theme.accentColor.g, theme.accentColor.b),
-    ])
-
-    k.add([
-      k.text('ESC  menu', { size: 12 }),
-      k.pos(k.width() - 16, k.height() - 16),
-      k.anchor('botright'),
-      k.fixed(),
-      k.color(theme.hudColor.r, theme.hudColor.g, theme.hudColor.b),
     ])
 
     // Physics / death
@@ -496,7 +502,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     k.onKeyPress('f', () => k.setFullscreen(!k.isFullscreen()))
     k.onKeyPress('escape', () => {
       if (setId) {
-        EventBus.emit('navigate', `/sets/${setId}`)
+        EventBus.emit('navigate', '/')
       }
     })
   }
@@ -532,8 +538,9 @@ export function StartGame(canvas: HTMLCanvasElement) {
       k.color(180, 180, 180),
     ])
 
+    const loseCtaText = setId ? 'SPACE  retry      ESC  home' : 'SPACE  retry'
     k.add([
-      k.text('SPACE  retry      ESC  menu', { size: 24 }),
+      k.text(loseCtaText, { size: 24 }),
       k.pos(k.width() / 2, k.height() / 2 + 80),
       k.anchor('center'),
       k.color(255, 255, 255),
@@ -555,7 +562,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     })
     k.onKeyPress('escape', () => {
       if (setId) {
-        EventBus.emit('navigate', `/sets/${setId}`)
+        EventBus.emit('navigate', '/')
       }
     })
   }
@@ -585,7 +592,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     ])
 
     k.add([
-      k.text('ESC  back to sets', { size: 16 }),
+      k.text('ESC  back home', { size: 16 }),
       k.pos(k.width() / 2, k.height() / 2 + 80),
       k.anchor('center'),
       k.color(180, 180, 180),
@@ -593,12 +600,12 @@ export function StartGame(canvas: HTMLCanvasElement) {
 
     k.onKeyPress('space', () => {
       if (setId) {
-        EventBus.emit('navigate', `/sets/${setId}`)
+        EventBus.emit('navigate', '/')
       }
     })
     k.onKeyPress('escape', () => {
       if (setId) {
-        EventBus.emit('navigate', `/sets/${setId}`)
+        EventBus.emit('navigate', '/')
       }
     })
   }
