@@ -1,6 +1,6 @@
 'use client'
 
-import { Play, SquarePen, Trash2 } from 'lucide-react'
+import { Play, Plus, SquarePen, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useOptimisticAction } from 'next-safe-action/hooks'
 import { useMemo, useState } from 'react'
@@ -110,14 +110,31 @@ function SetSection({
           <div className='mt-1 font-heading text-2xl'>{set.name}</div>
         </div>
         <div className='flex flex-wrap gap-2'>
-          <Link href={`/play/sets/${set.id}`}>
-            <Button className='px-4'>Play set</Button>
-          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={`/play/sets/${set.id}`}>
+                <Button
+                  aria-label='Play set'
+                  className='h-10 w-10 p-0'
+                  type='button'
+                >
+                  <Play className='size-4' />
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Play set</TooltipContent>
+          </Tooltip>
           <CreateLevelDialog
             setId={set.id}
             trigger={
-              <Button type='button' variant='neutral'>
-                Make level
+              <Button
+                aria-label='Make level'
+                className='h-10 gap-2 px-4'
+                type='button'
+                variant='neutral'
+              >
+                <Plus className='size-4' />
+                <span>Make level</span>
               </Button>
             }
           />
@@ -130,14 +147,22 @@ function SetSection({
               {expanded ? 'Collapse' : 'View more'}
             </Button>
           )}
-          <Button
-            className='border-2 border-red-700 bg-red-500 text-white shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none'
-            disabled={isDeletingSet}
-            onClick={() => onDeleteSet({ setId: set.id })}
-            type='button'
-          >
-            {isDeletingSet ? 'Deleting...' : 'Delete set'}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                aria-label='Delete set'
+                className='h-10 w-10 border-2 border-red-700 bg-red-500 p-0 text-white shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none'
+                disabled={isDeletingSet}
+                onClick={() => onDeleteSet({ setId: set.id })}
+                type='button'
+              >
+                <Trash2 className='size-4' />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isDeletingSet ? 'Deleting...' : 'Delete set'}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
