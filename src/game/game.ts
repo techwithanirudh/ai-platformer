@@ -119,7 +119,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     broadPhaseCollisionAlgorithm: "grid",
     global: false,
     debug: process.env.NODE_ENV === "development",
-  });
+  } as any);
 
   // Assets
   k.loadSprite("bean", "/sprites/bean.png");
@@ -146,8 +146,16 @@ export function StartGame(canvas: HTMLCanvasElement) {
 
   k.scene(
     "game",
-    (data: { levelId?: number; coins?: number; aiLevel?: Level } = {}) =>
-      game(data)
+    (
+      data: {
+        levelId?: number;
+        coins?: number;
+        aiLevel?: Level;
+        levels?: Level[];
+        levelIndex?: number;
+        setId?: string;
+      } = {}
+    ) => game(data)
   );
 
   k.scene("lose", (data: { levelId?: number; coins?: number } = {}) =>
@@ -156,9 +164,17 @@ export function StartGame(canvas: HTMLCanvasElement) {
 
   k.scene("win", (data: { coins?: number } = {}) => win(data));
 
+  k.scene("lastLevel", (data: { setId?: string; coins?: number } = {}) =>
+    lastLevel(data)
+  );
+
   // React → Kaplay bridge
   EventBus.on("load-level", (level: Level) => {
     k.go("game", { aiLevel: level, coins: 0 });
+  });
+
+  EventBus.on("set-levels", ({ levels, startIndex, setId }) => {
+    k.go("game", { levels, levelIndex: startIndex, coins: 0, setId });
   });
 
   k.onLoad(() => k.go("mainMenu"));
@@ -230,13 +246,21 @@ export function StartGame(canvas: HTMLCanvasElement) {
     levelId = 0,
     coins: startCoins = 0,
     aiLevel,
+    levels,
+    levelIndex = 0,
+    setId,
   }: {
     levelId?: number;
     coins?: number;
     aiLevel?: Level;
+    levels?: Level[];
+    levelIndex?: number;
+    setId?: string;
   }) {
-    const isAiLevel = !!aiLevel;
-    const theme = resolveTheme(aiLevel);
+    const activeLevel =
+      levels && levels.length > 0 ? levels[levelIndex] : aiLevel;
+    const isAiLevel = !!activeLevel;
+    const theme = resolveTheme(activeLevel);
 
     // Custom components
     function customPatrol(speed = 60) {
@@ -381,7 +405,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     };
 
     const levelMap = isAiLevel
-      ? aiLevel.levelMap
+      ? activeLevel.levelMap
       : LEVELS[levelId % LEVELS.length];
     const level = k.addLevel(levelMap, {
       tileWidth: 64,
@@ -389,7 +413,9 @@ export function StartGame(canvas: HTMLCanvasElement) {
       tiles,
     });
 
-    k.setBackground(theme.background);
+    k.setBackground(
+      k.rgb(theme.background[0], theme.background[1], theme.background[2])
+    );
 
     // Player spawn
     const spawnMarkers = level.get("playerSpawn");
@@ -442,7 +468,11 @@ export function StartGame(canvas: HTMLCanvasElement) {
     player.onUpdate(() => {
       k.setCamPos(player.pos);
       if (player.pos.y >= FALL_DEATH) {
-        k.go("lose", { levelId, coins });
+        if (levels && levels.length > 0) {
+          k.go("lose", { levels, levelIndex, setId, coins });
+        } else {
+          k.go("lose", { levelId, coins });
+        }
       }
     });
 
@@ -453,18 +483,32 @@ export function StartGame(canvas: HTMLCanvasElement) {
     });
 
     player.onCollide("danger", () => {
-      k.go("lose", { levelId, coins });
+      if (levels && levels.length > 0) {
+        k.go("lose", { levels, levelIndex, setId, coins });
+      } else {
+        k.go("lose", { levelId, coins });
+      }
       k.play("hit");
     });
 
     player.onCollide("portal", () => {
       k.play("portal");
+      if (levels && levels.length > 0) {
+        const nextIndex = levelIndex + 1;
+        if (nextIndex < levels.length) {
+          k.go("game", { levels, levelIndex: nextIndex, coins, setId });
+          return;
+        }
+        k.go("lastLevel", { setId, coins });
+        return;
+      }
+
       const next = levelId + 1;
       if (next < LEVELS.length) {
         k.go("game", { levelId: next, coins });
-      } else {
-        k.go("win", { coins });
+        return;
       }
+      k.go("win", { coins });
     });
 
     // Enemy stomp vs side-hit
@@ -475,7 +519,11 @@ export function StartGame(canvas: HTMLCanvasElement) {
         k.addKaboom(player.pos);
         k.play("powerup");
       } else {
-        k.go("lose", { levelId, coins });
+        if (levels && levels.length > 0) {
+          k.go("lose", { levels, levelIndex, setId, coins });
+        } else {
+          k.go("lose", { levelId, coins });
+        }
         k.play("hit");
       }
     });
@@ -549,9 +597,15 @@ export function StartGame(canvas: HTMLCanvasElement) {
 
   function lose({
     levelId = 0,
+    levels,
+    levelIndex = 0,
+    setId,
     coins = 0,
   }: {
     levelId?: number;
+    levels?: Level[];
+    levelIndex?: number;
+    setId?: string;
     coins?: number;
   }) {
     k.add([k.rect(k.width(), k.height()), k.color(20, 10, 10), k.pos(0, 0)]);
@@ -577,8 +631,20 @@ export function StartGame(canvas: HTMLCanvasElement) {
       k.color(255, 255, 255),
     ]);
 
-    k.onKeyPress("space", () => k.go("game", { levelId, coins: 0 }));
-    k.onKeyPress("enter", () => k.go("game", { levelId, coins: 0 }));
+    k.onKeyPress("space", () => {
+      if (levels && levels.length > 0) {
+        k.go("game", { levels, levelIndex, coins: 0, setId });
+      } else {
+        k.go("game", { levelId, coins: 0 });
+      }
+    });
+    k.onKeyPress("enter", () => {
+      if (levels && levels.length > 0) {
+        k.go("game", { levels, levelIndex, coins: 0, setId });
+      } else {
+        k.go("game", { levelId, coins: 0 });
+      }
+    });
     k.onKeyPress("escape", () => k.go("mainMenu"));
   }
 
@@ -618,6 +684,47 @@ export function StartGame(canvas: HTMLCanvasElement) {
     }
 
     k.onKeyPress("space", () => k.go("game", { levelId: 0, coins: 0 }));
+    k.onKeyPress("escape", () => k.go("mainMenu"));
+  }
+
+  function lastLevel({ setId, coins = 0 }: { setId?: string; coins?: number }) {
+    k.add([k.rect(k.width(), k.height()), k.color(15, 10, 25), k.pos(0, 0)]);
+
+    k.add([
+      k.text("LAST LEVEL!", { size: 56 }),
+      k.pos(k.width() / 2, k.height() / 2 - 90),
+      k.anchor("center"),
+      k.color(255, 220, 80),
+    ]);
+
+    k.add([
+      k.text(`coins collected: ${coins}`, { size: 22 }),
+      k.pos(k.width() / 2, k.height() / 2 - 20),
+      k.anchor("center"),
+      k.color(220, 220, 220),
+    ]);
+
+    k.add([
+      k.text("SPACE  build a new level", { size: 20 }),
+      k.pos(k.width() / 2, k.height() / 2 + 40),
+      k.anchor("center"),
+      k.color(255, 255, 255),
+    ]);
+
+    k.add([
+      k.text("ESC  back to sets", { size: 16 }),
+      k.pos(k.width() / 2, k.height() / 2 + 80),
+      k.anchor("center"),
+      k.color(180, 180, 180),
+    ]);
+
+    k.onKeyPress("space", () => {
+      if (setId) {
+        EventBus.emit("navigate", `/sets/${setId}`);
+      } else {
+        k.go("mainMenu");
+      }
+    });
     k.onKeyPress("escape", () => k.go("mainMenu"));
   }
 
