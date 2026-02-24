@@ -1,6 +1,7 @@
 'use client'
 
 import type { User } from '@/lib/auth-client'
+import { cn } from '@/lib/utils'
 
 interface UserAvatarProps {
   className?: string
@@ -14,7 +15,7 @@ export function UserAvatar({ user, className }: UserAvatarProps) {
   if (src) {
     return (
       <div
-        className={`h-9 w-9 overflow-hidden rounded-full border-2 border-border bg-background shadow-shadow ${className ?? ''}`}
+        className={`size-9 overflow-hidden bg-background ${className ?? ''}`}
       >
         <img alt={name} height={36} src={src} width={36} />
       </div>
@@ -31,7 +32,10 @@ export function UserAvatar({ user, className }: UserAvatarProps) {
 
   return (
     <div
-      className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-border bg-main text-main-foreground shadow-shadow ${className ?? ''}`}
+      className={cn(
+        'flex size-9 items-center justify-center bg-main text-main-foreground',
+        className
+      )}
     >
       <span className='text-[10px] uppercase tracking-[0.2em]'>
         {initials || 'MK'}

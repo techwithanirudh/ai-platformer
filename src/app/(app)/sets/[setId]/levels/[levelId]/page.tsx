@@ -23,7 +23,7 @@ export default async function LevelBuilderPage({
   const level = levelData.level
 
   return (
-    <div className='flex min-h-[calc(100vh-160px)] flex-col gap-4'>
+    <div className='flex h-full min-h-0 flex-col gap-4'>
       <div>
         <div className='text-foreground/60 text-xs uppercase tracking-[0.3em]'>
           level builder
@@ -31,7 +31,7 @@ export default async function LevelBuilderPage({
         <h1 className='font-heading text-3xl'>{level.title}</h1>
       </div>
 
-      <div className='flex-1'>
+      <div className='min-h-0 flex-1'>
         <LevelBuilder
           initialLevel={{
             levelMap: level.levelMap,

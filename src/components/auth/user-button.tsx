@@ -23,7 +23,7 @@ export function UserButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          className='h-10 w-10 border-2 border-border bg-secondary-background p-0 shadow-shadow'
+          className='size-10 border-2 border-border bg-secondary-background p-0 shadow-shadow'
           disabled={isPending}
           type='button'
           variant='neutral'
@@ -33,7 +33,7 @@ export function UserButton() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-56'>
         {user ? (
-          <div className='px-3 py-2'>
+          <div className='border-2 border-border bg-background px-3 py-2'>
             <div className='font-heading text-sm'>
               {user.name ?? user.email}
             </div>
@@ -54,8 +54,8 @@ export function UserButton() {
             <DropdownMenuItem asChild>
               <Link href='/account'>Account</Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
+              className='mt-2'
               onClick={async () => {
                 await signOut()
                 router.refresh()

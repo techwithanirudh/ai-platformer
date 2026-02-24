@@ -125,7 +125,7 @@ export function LevelBuilder({
 
   return (
     <ResizablePanelGroup
-      className='h-full w-full border-2 border-border bg-secondary-background shadow-shadow'
+      className='h-full min-h-0 w-full border-2 border-border bg-secondary-background shadow-shadow'
       defaultLayout={defaultLayout}
       onLayoutChanged={onLayoutChanged}
       orientation='vertical'
