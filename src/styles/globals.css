@@ -65,7 +65,7 @@
 
 @layer base {
   body {
-    @apply text-foreground font-base bg-background;
+    @apply text-foreground font-base bg-background m-0 min-h-screen overflow-hidden p-0;
   }
 
   h1,

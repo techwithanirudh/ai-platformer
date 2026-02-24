@@ -54,6 +54,8 @@ export function StartGame(canvas: HTMLCanvasElement) {
     stretch: true,
     letterbox: true,
     background: [141, 183, 255],
+    narrowPhaseCollisionAlgorithm: "sat",
+    broadPhaseCollisionAlgorithm: "grid",
     global: false,
     debug: process.env.NODE_ENV === "development",
   });
@@ -74,6 +76,8 @@ export function StartGame(canvas: HTMLCanvasElement) {
   k.loadSound("blip", "/sounds/blip.mp3");
   k.loadSound("hit", "/sounds/hit.mp3");
   k.loadSound("portal", "/sounds/portal.mp3");
+
+  k.setGravity(3200);
 
   // ── Scenes ─────────────────────────────────────────────────────────────────
 

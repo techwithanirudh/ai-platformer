@@ -2,7 +2,15 @@ import { openai } from "@ai-sdk/openai";
 import { streamObject } from "ai";
 import { levelSchema } from "@/lib/level-schema";
 
-export async function POST(req: Request) {
+export const config = {
+  runtime: "edge",
+};
+
+export default async function handler(req: Request) {
+  if (req.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+
   const { prompt }: { prompt: string } = await req.json();
 
   const result = streamObject({
