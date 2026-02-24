@@ -1,19 +1,19 @@
-import { createSafeActionClient } from "next-safe-action";
-import { getSession } from "@/server/auth";
+import { createSafeActionClient } from 'next-safe-action'
+import { getSession } from '@/server/auth'
 
 export const actionClient = createSafeActionClient({
   handleServerError(error) {
     if (error instanceof Error) {
-      return error.message;
+      return error.message
     }
-    return "Something went wrong.";
+    return 'Something went wrong.'
   },
-});
+})
 
 export const authAction = actionClient.use(async ({ next }) => {
-  const session = await getSession();
+  const session = await getSession()
   if (!session?.user) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized')
   }
-  return next({ ctx: { user: session.user } });
-});
+  return next({ ctx: { user: session.user } })
+})

@@ -21,7 +21,7 @@
       "!components/ui",
       "!**/*.grit"
     ],
-    "ignore": ["src/components/ui/**"]
+    "experimentalScannerIgnores": ["src/components/ui/**"]
   },
   "css": {
     "parser": {

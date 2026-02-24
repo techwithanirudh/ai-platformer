@@ -1,11 +1,11 @@
-"use server";
+'use server'
 
-import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { authAction } from "@/lib/safe-action";
-import { accountSchema } from "@/lib/validators/account";
-import { db } from "@/server/db";
-import { users } from "@/server/db/schema/auth";
+import { eq } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
+import { authAction } from '@/lib/safe-action'
+import { accountSchema } from '@/lib/validators/account'
+import { db } from '@/server/db'
+import { users } from '@/server/db/schema/auth'
 
 export const updateAccountAction = authAction
   .schema(accountSchema)
@@ -16,9 +16,9 @@ export const updateAccountAction = authAction
         name: parsedInput.name,
         updatedAt: new Date(),
       })
-      .where(eq(users.id, ctx.user.id));
+      .where(eq(users.id, ctx.user.id))
 
-    revalidatePath("/account");
-    revalidatePath("/");
-    return { ok: true };
-  });
+    revalidatePath('/account')
+    revalidatePath('/')
+    return { ok: true }
+  })

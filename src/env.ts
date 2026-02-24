@@ -1,11 +1,11 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-nextjs'
+import { z } from 'zod'
 
 export const env = createEnv({
   shared: {
     NODE_ENV: z
-      .enum(["development", "production", "test"])
-      .default("development"),
+      .enum(['development', 'production', 'test'])
+      .default('development'),
   },
   server: {
     DATABASE_URL: z.string().url(),
@@ -29,4 +29,4 @@ export const env = createEnv({
         : undefined),
   },
   emptyStringAsUndefined: true,
-});
+})

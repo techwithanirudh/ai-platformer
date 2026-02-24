@@ -53,4 +53,4 @@ export const examplesPrompt = `\
 }
 </output>
 </example>
-</examples>`;
+</examples>`

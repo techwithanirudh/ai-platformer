@@ -1,20 +1,20 @@
-"use server";
+'use server'
 
-import { generateObject } from "ai";
-import { and, desc, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { levelDesignerPrompt } from "@/lib/ai/prompts/level-designer";
-import { provider } from "@/lib/ai/providers";
-import { levelSchema } from "@/lib/level-schema";
-import { authAction } from "@/lib/safe-action";
+import { generateObject } from 'ai'
+import { and, desc, eq } from 'drizzle-orm'
+import { revalidatePath } from 'next/cache'
+import { levelDesignerPrompt } from '@/lib/ai/prompts/level-designer'
+import { provider } from '@/lib/ai/providers'
+import { levelSchema } from '@/lib/level-schema'
+import { authAction } from '@/lib/safe-action'
 import {
   createLevelSchema,
   deleteLevelSchema,
   updateLevelSchema,
-} from "@/lib/validators/levels";
-import { db } from "@/server/db";
-import { levels } from "@/server/db/schema/levels";
-import { sets } from "@/server/db/schema/sets";
+} from '@/lib/validators/levels'
+import { db } from '@/server/db'
+import { levels } from '@/server/db/schema/levels'
+import { sets } from '@/server/db/schema/sets'
 
 export const createLevelAction = authAction
   .schema(createLevelSchema)
@@ -23,10 +23,10 @@ export const createLevelAction = authAction
       .select()
       .from(sets)
       .where(and(eq(sets.id, parsedInput.setId), eq(sets.userId, ctx.user.id)))
-      .limit(1);
+      .limit(1)
 
     if (setRecord.length === 0) {
-      throw new Error("Set not found.");
+      throw new Error('Set not found.')
     }
 
     const existingLevels = await db
@@ -34,21 +34,19 @@ export const createLevelAction = authAction
       .from(levels)
       .where(eq(levels.setId, parsedInput.setId))
       .orderBy(desc(levels.order))
-      .limit(1);
+      .limit(1)
 
-    const nextOrder = existingLevels[0]?.order
-      ? existingLevels[0].order + 1
-      : 1;
+    const nextOrder = existingLevels[0]?.order ? existingLevels[0].order + 1 : 1
 
     const result = await generateObject({
-      model: provider.languageModel("chat-model"),
+      model: provider.languageModel('chat-model'),
       schema: levelSchema,
       system: levelDesignerPrompt(),
       prompt: `Create a brand new level titled "${parsedInput.title}". Theme description: ${setRecord[0].theme}. Pick the closest tileset that matches this theme.`,
-    });
+    })
 
-    const newLevel = result.object;
-    const id = crypto.randomUUID();
+    const newLevel = result.object
+    const id = crypto.randomUUID()
 
     await db.insert(levels).values({
       id,
@@ -62,11 +60,11 @@ export const createLevelAction = authAction
       hudColor: newLevel.hudColor,
       accentColor: newLevel.accentColor,
       platformTint: newLevel.platformTint,
-    });
+    })
 
-    revalidatePath(`/sets/${parsedInput.setId}`);
-    return { levelId: id, setId: parsedInput.setId };
-  });
+    revalidatePath(`/sets/${parsedInput.setId}`)
+    return { levelId: id, setId: parsedInput.setId }
+  })
 
 export const updateLevelAction = authAction
   .schema(updateLevelSchema)
@@ -75,13 +73,13 @@ export const updateLevelAction = authAction
       .select()
       .from(sets)
       .where(and(eq(sets.id, parsedInput.setId), eq(sets.userId, ctx.user.id)))
-      .limit(1);
+      .limit(1)
 
     if (setRecord.length === 0) {
-      throw new Error("Set not found.");
+      throw new Error('Set not found.')
     }
 
-    const levelData = parsedInput.level;
+    const levelData = parsedInput.level
 
     await db
       .update(levels)
@@ -98,12 +96,12 @@ export const updateLevelAction = authAction
       })
       .where(
         and(eq(levels.id, parsedInput.id), eq(levels.setId, parsedInput.setId))
-      );
+      )
 
-    revalidatePath(`/sets/${parsedInput.setId}`);
-    revalidatePath(`/sets/${parsedInput.setId}/levels/${parsedInput.id}`);
-    return { ok: true };
-  });
+    revalidatePath(`/sets/${parsedInput.setId}`)
+    revalidatePath(`/sets/${parsedInput.setId}/levels/${parsedInput.id}`)
+    return { ok: true }
+  })
 
 export const deleteLevelAction = authAction
   .schema(deleteLevelSchema)
@@ -112,10 +110,10 @@ export const deleteLevelAction = authAction
       .select()
       .from(sets)
       .where(and(eq(sets.id, parsedInput.setId), eq(sets.userId, ctx.user.id)))
-      .limit(1);
+      .limit(1)
 
     if (setRecord.length === 0) {
-      throw new Error("Set not found.");
+      throw new Error('Set not found.')
     }
 
     await db
@@ -125,8 +123,8 @@ export const deleteLevelAction = authAction
           eq(levels.id, parsedInput.levelId),
           eq(levels.setId, parsedInput.setId)
         )
-      );
+      )
 
-    revalidatePath(`/sets/${parsedInput.setId}`);
-    return { ok: true };
-  });
+    revalidatePath(`/sets/${parsedInput.setId}`)
+    return { ok: true }
+  })

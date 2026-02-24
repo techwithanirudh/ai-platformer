@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
-import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
-import { EventBus } from "@/game/EventBus";
-import { StartGame } from "@/game/game";
-import type { Level } from "@/lib/level-schema";
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+import { EventBus } from '@/game/EventBus'
+import { StartGame } from '@/game/game'
+import type { Level } from '@/lib/level-schema'
 
 export interface GameCanvasProps {
-  level?: Level | null;
-  levels?: Level[];
-  setId?: string;
-  startIndex?: number;
+  level?: Level | null
+  levels?: Level[]
+  setId?: string
+  startIndex?: number
 }
 
 export default function GameCanvas({
@@ -19,44 +19,44 @@ export default function GameCanvas({
   startIndex = 0,
   setId,
 }: GameCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const router = useRouter();
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (!canvasRef.current) {
-      return;
+      return
     }
-    const k = StartGame(canvasRef.current);
-    return () => k.quit();
-  }, []);
+    const k = StartGame(canvasRef.current)
+    return () => k.quit()
+  }, [])
 
   useEffect(() => {
     const handleNavigate = (url: string) => {
-      router.push(url);
-    };
-    EventBus.on("navigate", handleNavigate);
+      router.push(url)
+    }
+    EventBus.on('navigate', handleNavigate)
     return () => {
-      EventBus.off("navigate", handleNavigate);
-    };
-  }, [router]);
+      EventBus.off('navigate', handleNavigate)
+    }
+  }, [router])
 
   useEffect(() => {
     if (!levels || levels.length === 0) {
-      return;
+      return
     }
-    EventBus.emit("set-levels", {
+    EventBus.emit('set-levels', {
       levels,
       startIndex,
       setId,
-    });
-  }, [levels, setId, startIndex]);
+    })
+  }, [levels, setId, startIndex])
 
   useEffect(() => {
     if (!level) {
-      return;
+      return
     }
-    EventBus.emit("load-level", level);
-  }, [level]);
+    EventBus.emit('load-level', level)
+  }, [level])
 
-  return <canvas className="block h-full w-full" ref={canvasRef} />;
+  return <canvas className='block h-full w-full' ref={canvasRef} />
 }

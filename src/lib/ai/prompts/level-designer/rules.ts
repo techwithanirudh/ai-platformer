@@ -34,4 +34,4 @@ Color constraints:
 - accentColor should pop against both backgroundColor and hudColor.
 - backgroundColor should match tileset mood (e.g. lava = warm, space = dark/blue).
 - platformTint should complement the tileset and remain visible against backgroundColor.
-</rules>`;
+</rules>`
