@@ -22,7 +22,7 @@ export const examplesPrompt = `\
   "backgroundColor": "#8ecae6",
   "hudColor": "#0b090a",
   "accentColor": "#ffb703",
-  "platformTint": null
+  "platformTint": "#5aa9e6"
 }
 </output>
 </example>

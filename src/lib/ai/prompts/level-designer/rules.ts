@@ -7,7 +7,7 @@ Output must be a JSON object with fields:
 - backgroundColor: CSS hex color ("#RRGGBB" or "#RGB")
 - hudColor: CSS hex color for HUD text
 - accentColor: CSS hex color for highlights
-- platformTint: CSS hex color to tint platforms (use null to apply tileset-based tint)
+- platformTint: CSS hex color to tint platforms (required)
 
 Tile symbols:
 - = grass ground / platform (solid)
@@ -33,4 +33,5 @@ Color constraints:
 - Use high contrast: hudColor should be readable on backgroundColor.
 - accentColor should pop against both backgroundColor and hudColor.
 - backgroundColor should match tileset mood (e.g. lava = warm, space = dark/blue).
+- platformTint should complement the tileset and remain visible against backgroundColor.
 </rules>`;

@@ -50,7 +50,7 @@ export default async function PlayLevelPage({ params }: PlayLevelPageProps) {
     backgroundColor: row.backgroundColor,
     hudColor: row.hudColor,
     accentColor: row.accentColor,
-    platformTint: row.platformTint ?? null,
+    platformTint: row.platformTint ?? row.accentColor,
   }));
 
   const startIndex = Math.max(

@@ -62,7 +62,7 @@ export default async function LevelBuilderPage({
           backgroundColor: level.backgroundColor,
           hudColor: level.hudColor,
           accentColor: level.accentColor,
-          platformTint: level.platformTint ?? null,
+          platformTint: level.platformTint ?? level.accentColor,
         }}
         initialTitle={level.title}
         levelId={level.id}

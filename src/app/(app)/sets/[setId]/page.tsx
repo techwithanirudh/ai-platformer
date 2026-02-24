@@ -1,9 +1,9 @@
 import { and, asc, eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createLevel, deleteLevel } from "@/app/(app)/actions/levels";
+import { CreateLevelDialog } from "@/app/(app)/_components/create-level-dialog";
+import { DeleteLevelButton } from "@/app/(app)/_components/delete-level-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { getSession } from "@/server/auth";
 import { db } from "@/server/db";
 import { levels } from "@/server/db/schema/levels";
@@ -44,7 +44,9 @@ export default async function SetPage({ params }: SetPageProps) {
             set
           </div>
           <h1 className="font-heading text-3xl">{set.name}</h1>
-          <p className="mt-2 text-foreground/70 text-sm">{set.description}</p>
+          <p className="mt-2 text-foreground/70 text-sm">
+            {set.description ?? set.theme}
+          </p>
           <div className="mt-3 inline-flex border-2 border-border bg-background px-3 py-1 text-xs uppercase tracking-[0.25em]">
             {set.theme}
           </div>
@@ -58,20 +60,16 @@ export default async function SetPage({ params }: SetPageProps) {
               <Button variant="neutral">Play from level 1</Button>
             </Link>
           )}
+          <CreateLevelDialog
+            setId={setId}
+            trigger={
+              <Button type="button" variant="reverse">
+                Make level
+              </Button>
+            }
+          />
         </div>
       </div>
-
-      <form
-        action={createLevel}
-        className="grid gap-3 border-2 border-border bg-secondary-background p-4 shadow-shadow"
-      >
-        <input name="setId" type="hidden" value={setId} />
-        <div className="text-foreground/60 text-xs uppercase tracking-[0.3em]">
-          make level
-        </div>
-        <Input name="title" placeholder="Level title" required />
-        <Button type="submit">Create level</Button>
-      </form>
 
       <div className="grid gap-3">
         {levelRows.length === 0 ? (
@@ -95,13 +93,7 @@ export default async function SetPage({ params }: SetPageProps) {
                 <Link href={`/play/levels/${level.id}`}>
                   <Button variant="neutral">Play</Button>
                 </Link>
-                <form action={deleteLevel}>
-                  <input name="setId" type="hidden" value={setId} />
-                  <input name="levelId" type="hidden" value={level.id} />
-                  <Button type="submit" variant="reverse">
-                    Delete
-                  </Button>
-                </form>
+                <DeleteLevelButton levelId={level.id} setId={setId} />
               </div>
             </div>
           ))

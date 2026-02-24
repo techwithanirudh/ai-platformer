@@ -1,22 +1,42 @@
-# Markie Implementation Plan (Snapshot)
+# Markie Implementation Plan (Detailed)
 
-## Goals
-- App Router migration.
-- Better Auth + Drizzle (Postgres/Neon).
-- Sets/Levels DB model with themed sets and ordered levels.
-- AI level generation + editor with streaming updates.
-- Two-panel level builder (game preview + AI panel).
+## Vision
+Markie is an AI-first 2D platformer builder where **all levels are AI-generated**, grouped into themed sets, and edited in a live two-panel builder (game preview + AI editor).
 
-## Core UX
-- Home = sets list.
-- Create set (theme + name + description).
-- Open set → list levels, create/delete, play.
-- Level builder with AI edit, 4 idea chips, save, play.
-- Play set progresses level-to-level and ends with “build a new level?”
+## Core Decisions
+- **App Router** only.
+- **Better Auth + Drizzle (Postgres/Neon)** for auth/session storage.
+- **next-safe-action + React Hook Form** for all user input and mutations.
+- **No default/manual levels**: every level is AI-generated.
+- **Level builder UI** uses a vertical resizable split (top game, bottom AI editor).
+
+## UX Map
+- **Home (/)**:
+  - Empty state: full-width "Create your first set" card.
+  - Sets list: each set row shows name, theme, and a horizontally scrollable list of levels.
+  - "View more" navigates to set page.
+  - Create set dialog (name + theme description).
+- **Set (/sets/[setId])**:
+  - Set header with theme badge and theme description.
+  - Create level dialog (title only).
+  - Levels list with open / play / delete actions.
+- **Level builder (/sets/[setId]/levels/[levelId])**:
+  - Resizable split: game preview on top, AI editor on bottom.
+  - AI ideas chips (4).
+  - Edit prompt → apply edits → save → play.
+  - Color controls (background, HUD, accent, platform tint).
+- **Play**:
+  - `/play/sets/[setId]` plays in sequence.
+  - `/play/levels/[levelId]` starts at a given level, continues forward.
+  - Last level shows CTA to build a new one.
+- **Account (/account)**:
+  - Display avatar, name, email, created date.
+  - Edit display name with RHF + safe action.
 
 ## Routes
 - `/login`
-- `/` (sets)
+- `/` (sets home)
+- `/account`
 - `/sets/[setId]`
 - `/sets/[setId]/levels/[levelId]`
 - `/play/sets/[setId]`
@@ -26,30 +46,56 @@
 - `/api/levels/generate`
 - `/api/levels/edit`
 
-## DB Schema
-- Better Auth tables (users, sessions, accounts, verifications)
-- `sets`: id, userId, name, theme, description, createdAt, updatedAt
-- `levels`: id, setId, title, order, levelMap (jsonb), tileset, difficulty,
-  backgroundColor, hudColor, accentColor, platformTint, createdAt, updatedAt
+## Data Model
+### Auth (Better Auth)
+- users, sessions, accounts, verifications
 
-## AI
-- `level-designer` prompt for full level generation.
-- `level-ideas` prompt for 4 idea chips.
-- `level-editor` prompt for full JSON edits.
+### Sets
+- `id`
+- `userId`
+- `name`
+- `theme` (free-text description, user provided)
+- `description` (theme description; currently mirrors `theme`)
+- `createdAt`, `updatedAt`
+
+### Levels
+- `id`
+- `setId`
+- `title`
+- `order`
+- `levelMap` (jsonb)
+- `tileset` enum
+- `difficulty` enum
+- `backgroundColor`, `hudColor`, `accentColor`, `platformTint`
+- `createdAt`, `updatedAt`
+
+## AI Contract
+- Level schema:
+  - 10 rows, 24 chars each.
+  - Exactly one `@` (spawn) and one `!` (portal).
+  - Required `platformTint` hex.
+- Prompts:
+  - `level-designer` (full level creation)
+  - `level-ideas` (4 short ideas)
+  - `level-editor` (full JSON edits)
 
 ## Game Runtime
-- `GameCanvas` listens for EventBus events.
-- `set-levels` event to play ordered levels.
-- `navigate` event for last-level CTA.
+- `GameCanvas` listens to EventBus:
+  - `set-levels` for ordered playthrough.
+  - `load-level` for single level.
+  - `navigate` for last-level CTA.
+- Gravity and collision parameters aligned to Kaplay defaults.
 
-## Auth
-- Better Auth server handler in App Router.
-- OAuth with Google/GitHub.
+## Auth / Settings
+- OAuth providers (Google/GitHub).
+- Account page uses safe action to update user name.
+- Header provides Account + Sign out.
 
-## Env
-- DATABASE_URL
-- BETTER_AUTH_SECRET
-- BETTER_AUTH_URL
-- NEXT_PUBLIC_BASE_URL
-- GOOGLE/GITHUB OAuth keys
-- OPENAI_API_KEY
+## Environment
+- `DATABASE_URL`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `NEXT_PUBLIC_BASE_URL`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
+- `OPENAI_API_KEY`

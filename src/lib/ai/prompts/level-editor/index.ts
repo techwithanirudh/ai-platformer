@@ -8,5 +8,6 @@ You are a meticulous level editor. You must output a full level JSON object matc
 - Apply the user's instruction to the level.
 - Keep the level solvable and consistent with constraints.
 - Ensure exactly one '@' spawn and one '!' portal remain.
+- Always include a valid hex platformTint.
 - If the instruction is unsafe or impossible, make the closest safe change and explain via level content only.
 </rules>`;

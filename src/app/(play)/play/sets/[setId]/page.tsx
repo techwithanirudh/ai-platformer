@@ -42,7 +42,7 @@ export default async function PlaySetPage({ params }: PlaySetPageProps) {
     backgroundColor: level.backgroundColor,
     hudColor: level.hudColor,
     accentColor: level.accentColor,
-    platformTint: level.platformTint ?? null,
+    platformTint: level.platformTint ?? level.accentColor,
   }));
 
   return (
