@@ -11,6 +11,12 @@ export const levelSchema = z.object({
     .describe("Visual theme"),
   difficulty: z.enum(["easy", "medium", "hard"]),
   backgroundColor: z.string().describe("CSS hex color e.g. #1a1a2e"),
+  hudColor: z.string().describe("CSS hex color for HUD text"),
+  accentColor: z.string().describe("CSS hex color for HUD highlights"),
+  platformTint: z
+    .string()
+    .nullable()
+    .describe("CSS hex tint for platforms (use null to auto-pick)"),
 });
 
 export type Level = z.infer<typeof levelSchema>;

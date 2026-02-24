@@ -4,9 +4,70 @@ import { EventBus } from "./EventBus";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
+const DEFAULT_BACKGROUND = [141, 183, 255] as const;
+const DEFAULT_HUD_COLOR = { r: 255, g: 255, b: 255 };
+const DEFAULT_ACCENT_COLOR = { r: 255, g: 220, b: 50 };
 const JUMP_FORCE = 1320;
 const MOVE_SPEED = 480;
 const FALL_DEATH = 2400;
+
+const HEX_COLOR = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+function hexToRgb(value: string) {
+  const trimmed = value.trim();
+  const match = HEX_COLOR.exec(trimmed);
+  if (!match) {
+    return null;
+  }
+  const hex = match[1];
+  const normalized =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : hex;
+  const r = Number.parseInt(normalized.slice(0, 2), 16);
+  const g = Number.parseInt(normalized.slice(2, 4), 16);
+  const b = Number.parseInt(normalized.slice(4, 6), 16);
+  return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)
+    ? null
+    : { r, g, b };
+}
+
+function resolveTheme(level?: Level) {
+  if (!level) {
+    return {
+      background: DEFAULT_BACKGROUND,
+      hudColor: DEFAULT_HUD_COLOR,
+      accentColor: DEFAULT_ACCENT_COLOR,
+      platformTint: null as { r: number; g: number; b: number } | null,
+    };
+  }
+
+  const background = hexToRgb(level.backgroundColor);
+  const hudColor = hexToRgb(level.hudColor);
+  const accentColor = hexToRgb(level.accentColor);
+
+  const tilesetTint = {
+    jungle: "#6cc04a",
+    cave: "#5c5f66",
+    castle: "#c9c9c9",
+    space: "#6aa3ff",
+    lava: "#ff5a3d",
+  }[level.tileset];
+
+  const platformTint = hexToRgb(level.platformTint ?? tilesetTint);
+
+  return {
+    background: background
+      ? ([background.r, background.g, background.b] as const)
+      : DEFAULT_BACKGROUND,
+    hudColor: hudColor ?? DEFAULT_HUD_COLOR,
+    accentColor: accentColor ?? DEFAULT_ACCENT_COLOR,
+    platformTint,
+  };
+}
 
 const LEVELS = [
   [
@@ -175,6 +236,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     aiLevel?: Level;
   }) {
     const isAiLevel = !!aiLevel;
+    const theme = resolveTheme(aiLevel);
 
     // Custom components
     function customPatrol(speed = 60) {
@@ -301,6 +363,15 @@ export function StartGame(canvas: HTMLCanvasElement) {
           ],
       "=": () => [
         k.sprite("grass"),
+        ...(theme.platformTint
+          ? [
+              k.color(
+                theme.platformTint.r,
+                theme.platformTint.g,
+                theme.platformTint.b
+              ),
+            ]
+          : []),
         k.area(),
         k.body({ isStatic: true }),
         k.anchor("bot"),
@@ -317,6 +388,8 @@ export function StartGame(canvas: HTMLCanvasElement) {
       tileHeight: 64,
       tiles,
     });
+
+    k.setBackground(theme.background);
 
     // Player spawn
     const spawnMarkers = level.get("playerSpawn");
@@ -346,7 +419,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
       k.text(`COINS: ${coins}`, { size: 24 }),
       k.pos(24, 16),
       k.fixed(),
-      k.color(255, 255, 255),
+      k.color(theme.hudColor.r, theme.hudColor.g, theme.hudColor.b),
     ]);
 
     k.add([
@@ -354,7 +427,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
       k.pos(k.width() - 16, 16),
       k.anchor("topright"),
       k.fixed(),
-      k.color(200, 200, 200),
+      k.color(theme.accentColor.r, theme.accentColor.g, theme.accentColor.b),
     ]);
 
     k.add([
@@ -362,7 +435,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
       k.pos(k.width() - 16, k.height() - 16),
       k.anchor("botright"),
       k.fixed(),
-      k.color(120, 120, 120),
+      k.color(theme.hudColor.r, theme.hudColor.g, theme.hudColor.b),
     ]);
 
     // Physics / death

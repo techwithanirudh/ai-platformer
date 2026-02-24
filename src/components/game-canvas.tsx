@@ -1,13 +1,11 @@
-"use client";
-
-import { experimental_useObject as useObject } from "ai/react";
+import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { EventBus } from "@/game/EventBus";
 import { StartGame } from "@/game/game";
 import type { Level } from "@/lib/level-schema";
 import { levelSchema } from "@/lib/level-schema";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export default function GameCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,6 +55,9 @@ export default function GameCanvas() {
       tileset: object.tileset ?? "jungle",
       difficulty: object.difficulty ?? "easy",
       backgroundColor: object.backgroundColor ?? "#1a1a2e",
+      hudColor: object.hudColor ?? "#ffffff",
+      accentColor: object.accentColor ?? "#ffd24a",
+      platformTint: object.platformTint ?? null,
     };
 
     EventBus.emit("load-level", level);
@@ -74,43 +75,43 @@ export default function GameCanvas() {
 
   return (
     <div className="fixed inset-0 h-screen w-screen">
-      <canvas ref={canvasRef} className="block h-full w-full" />
+      <canvas className="block h-full w-full" ref={canvasRef} />
 
       {showPrompt && (
         <div className="fixed inset-0 flex items-center justify-center bg-overlay px-4">
           <div className="w-full max-w-lg rounded-base border-2 border-border bg-secondary-background p-6 text-foreground shadow-shadow">
-            <div className="mb-3 text-xs font-heading uppercase tracking-[0.35em] text-foreground/70">
+            <div className="mb-3 font-heading text-foreground/70 text-xs uppercase tracking-[0.35em]">
               &gt; describe your level
             </div>
 
             {error && (
-              <div className="mb-3 border-2 border-border bg-[#ffeded] px-3 py-2 text-xs text-[#a40000]">
+              <div className="mb-3 border-2 border-border bg-[#ffeded] px-3 py-2 text-[#a40000] text-xs">
                 ERROR: {error.message}
               </div>
             )}
 
             <form className="space-y-3" onSubmit={handleSubmit}>
               <Input
+                className="h-11 text-base"
                 disabled={isLoading}
                 placeholder="a lava cave with spikes and jumping enemies..."
                 ref={inputRef}
-                className="h-11 text-base"
               />
 
               <div className="flex flex-wrap gap-2">
                 <Button
+                  className="min-w-[160px] flex-1 tracking-[0.25em]"
                   disabled={isLoading}
-                  className="flex-1 min-w-[160px] tracking-[0.25em]"
                   type="submit"
                 >
                   {isLoading ? "GENERATING..." : "GENERATE"}
                 </Button>
 
                 <Button
+                  className="min-w-[120px]"
                   onClick={() => setShowPrompt(false)}
                   type="button"
                   variant="neutral"
-                  className="min-w-[120px]"
                 >
                   Cancel
                 </Button>
@@ -118,7 +119,7 @@ export default function GameCanvas() {
             </form>
 
             {isLoading && object?.levelMap && (
-              <pre className="mt-4 max-h-48 overflow-x-auto border-2 border-border bg-background px-3 py-2 text-xs leading-5 text-foreground">
+              <pre className="mt-4 max-h-48 overflow-x-auto border-2 border-border bg-background px-3 py-2 text-foreground text-xs leading-5">
                 {object.levelMap.join("\n")}
               </pre>
             )}

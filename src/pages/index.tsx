@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
 
-const GameCanvas = dynamic(() => import("@/components/GameCanvas"), {
+const GameCanvas = dynamic(() => import("@/components/game-canvas"), {
   ssr: false,
 });
 
