@@ -7,11 +7,11 @@ import { levels } from "@/server/db/schema/levels";
 import { sets } from "@/server/db/schema/sets";
 
 interface PlayLevelPageProps {
-  params: { levelId: string };
+  params: Promise<{ levelId: string }>;
 }
 
 export default async function PlayLevelPage({ params }: PlayLevelPageProps) {
-  const { levelId } = params;
+  const { levelId } = await params;
   const session = await getSession();
   const userId = session?.user?.id ?? "";
 

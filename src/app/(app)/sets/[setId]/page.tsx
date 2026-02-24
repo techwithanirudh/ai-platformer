@@ -10,11 +10,11 @@ import { levels } from "@/server/db/schema/levels";
 import { sets } from "@/server/db/schema/sets";
 
 interface SetPageProps {
-  params: { setId: string };
+  params: Promise<{ setId: string }>;
 }
 
 export default async function SetPage({ params }: SetPageProps) {
-  const { setId } = params;
+  const { setId } = await params;
   const session = await getSession();
   const userId = session?.user?.id ?? "";
 

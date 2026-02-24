@@ -69,42 +69,6 @@ function resolveTheme(level?: Level) {
   };
 }
 
-const LEVELS = [
-  [
-    "    0       ",
-    "   --       ",
-    "       $   ",
-    " %    ===   ",
-    "            ",
-    "   ^^  > = @",
-    "============",
-  ],
-  [
-    "                          $",
-    "                          $",
-    "                          $",
-    "                          $",
-    "                          $",
-    "           $         =   $",
-    "  %      ====         =   $",
-    "                      =   $",
-    "                      =    ",
-    "       ^^      = >    =   @",
-    "===========================",
-  ],
-  [
-    "     $    $    $    $     $",
-    "     $    $    $    $     $",
-    "                           ",
-    "                           ",
-    "                           ",
-    "                           ",
-    "                           ",
-    " ^^^^>^^^^>^^^^>^^^^>^^^^^@",
-    "===========================",
-  ],
-];
-
 // ── Entry point ────────────────────────────────────────────────────────────────
 
 export function StartGame(canvas: HTMLCanvasElement) {
@@ -142,8 +106,6 @@ export function StartGame(canvas: HTMLCanvasElement) {
 
   // ── Scenes ─────────────────────────────────────────────────────────────────
 
-  k.scene("mainMenu", mainMenu);
-
   k.scene(
     "game",
     (
@@ -158,11 +120,18 @@ export function StartGame(canvas: HTMLCanvasElement) {
     ) => game(data)
   );
 
-  k.scene("lose", (data: { levelId?: number; coins?: number } = {}) =>
-    lose(data)
+  k.scene(
+    "lose",
+    (
+      data: {
+        levelId?: number;
+        coins?: number;
+        levels?: Level[];
+        levelIndex?: number;
+        setId?: string;
+      } = {}
+    ) => lose(data)
   );
-
-  k.scene("win", (data: { coins?: number } = {}) => win(data));
 
   k.scene("lastLevel", (data: { setId?: string; coins?: number } = {}) =>
     lastLevel(data)
@@ -177,68 +146,11 @@ export function StartGame(canvas: HTMLCanvasElement) {
     k.go("game", { levels, levelIndex: startIndex, coins: 0, setId });
   });
 
-  k.onLoad(() => k.go("mainMenu"));
+  k.onLoad(() => {
+    // Scene is set by app events.
+  });
 
   return k;
-
-  // ── Main Menu ───────────────────────────────────────────────────────────────
-
-  function mainMenu() {
-    k.add([k.rect(k.width(), k.height()), k.color(141, 183, 255), k.pos(0, 0)]);
-
-    k.add([
-      k.rect(k.width(), 80),
-      k.pos(0, k.height() - 80),
-      k.color(34, 139, 34),
-    ]);
-
-    k.add([
-      k.sprite("bean"),
-      k.pos(k.width() / 2, k.height() - 80),
-      k.scale(3),
-      k.anchor("bot"),
-    ]);
-
-    for (let i = 0; i < 5; i++) {
-      k.add([
-        k.sprite("coin"),
-        k.pos(120 + i * 180, k.height() - 160),
-        k.scale(1.5),
-        k.anchor("bot"),
-      ]);
-    }
-
-    k.add([
-      k.text("AI PLATFORMER", { size: 52 }),
-      k.pos(k.width() / 2, 90),
-      k.anchor("center"),
-      k.color(255, 220, 50),
-    ]);
-
-    k.add([
-      k.text("describe your level. play it.", { size: 20 }),
-      k.pos(k.width() / 2, 155),
-      k.anchor("center"),
-      k.color(255, 255, 255),
-    ]);
-
-    menuBtn("PLAY  LEVELS", k.vec2(k.width() / 2, 260), () =>
-      k.go("game", { levelId: 0, coins: 0 })
-    );
-
-    menuBtn("AI  LEVEL", k.vec2(k.width() / 2, 340), () =>
-      EventBus.emit("show-ai-prompt")
-    );
-
-    k.add([
-      k.text("arrow keys / WASD  move    space / W  jump", { size: 14 }),
-      k.pos(k.width() / 2, k.height() - 26),
-      k.anchor("center"),
-      k.color(200, 200, 200),
-    ]);
-
-    k.onKeyPress("f", () => k.setFullscreen(!k.isFullscreen()));
-  }
 
   // ── Game ────────────────────────────────────────────────────────────────────
 
@@ -374,17 +286,15 @@ export function StartGame(canvas: HTMLCanvasElement) {
         k.offscreen({ hide: true }),
         "enemy",
       ],
-      // Built-in: @ = portal exit. AI: @ = player spawn marker.
-      "@": isAiLevel
-        ? () => [k.rect(2, 2), k.opacity(0), k.anchor("bot"), "playerSpawn"]
-        : () => [
-            k.sprite("portal"),
-            k.area({ scale: 0.5 }),
-            k.anchor("bot"),
-            k.pos(0, -12),
-            k.offscreen({ hide: true }),
-            "portal",
-          ],
+      "@": () => [k.rect(2, 2), k.opacity(0), k.anchor("bot"), "playerSpawn"],
+      "!": () => [
+        k.sprite("portal"),
+        k.area({ scale: 0.5 }),
+        k.anchor("bot"),
+        k.pos(0, -12),
+        k.offscreen({ hide: true }),
+        "portal",
+      ],
       "=": () => [
         k.sprite("grass"),
         ...(theme.platformTint
@@ -404,9 +314,11 @@ export function StartGame(canvas: HTMLCanvasElement) {
       ],
     };
 
-    const levelMap = isAiLevel
-      ? activeLevel.levelMap
-      : LEVELS[levelId % LEVELS.length];
+    if (!activeLevel) {
+      return;
+    }
+
+    const levelMap = activeLevel.levelMap;
     const level = k.addLevel(levelMap, {
       tileWidth: 64,
       tileHeight: 64,
@@ -420,9 +332,7 @@ export function StartGame(canvas: HTMLCanvasElement) {
     // Player spawn
     const spawnMarkers = level.get("playerSpawn");
     const spawnPos =
-      isAiLevel && spawnMarkers.length > 0
-        ? spawnMarkers[0].pos
-        : k.vec2(64, 0);
+      spawnMarkers.length > 0 ? spawnMarkers[0].pos : k.vec2(64, 0);
 
     const player = k.add([
       k.sprite("bean"),
@@ -493,22 +403,16 @@ export function StartGame(canvas: HTMLCanvasElement) {
 
     player.onCollide("portal", () => {
       k.play("portal");
-      if (levels && levels.length > 0) {
-        const nextIndex = levelIndex + 1;
-        if (nextIndex < levels.length) {
-          k.go("game", { levels, levelIndex: nextIndex, coins, setId });
-          return;
-        }
-        k.go("lastLevel", { setId, coins });
+      if (!levels || levels.length === 0) {
         return;
       }
 
-      const next = levelId + 1;
-      if (next < LEVELS.length) {
-        k.go("game", { levelId: next, coins });
+      const nextIndex = levelIndex + 1;
+      if (nextIndex < levels.length) {
+        k.go("game", { levels, levelIndex: nextIndex, coins, setId });
         return;
       }
-      k.go("win", { coins });
+      k.go("lastLevel", { setId, coins });
     });
 
     // Enemy stomp vs side-hit
@@ -590,7 +494,11 @@ export function StartGame(canvas: HTMLCanvasElement) {
     k.onGamepadButtonPress("south", jump);
     k.onGamepadStick("left", (v: any) => player.move(v.x * MOVE_SPEED, 0));
     k.onKeyPress("f", () => k.setFullscreen(!k.isFullscreen()));
-    k.onKeyPress("escape", () => k.go("mainMenu"));
+    k.onKeyPress("escape", () => {
+      if (setId) {
+        EventBus.emit("navigate", `/sets/${setId}`);
+      }
+    });
   }
 
   // ── Lose ────────────────────────────────────────────────────────────────────
@@ -645,46 +553,11 @@ export function StartGame(canvas: HTMLCanvasElement) {
         k.go("game", { levelId, coins: 0 });
       }
     });
-    k.onKeyPress("escape", () => k.go("mainMenu"));
-  }
-
-  // ── Win ─────────────────────────────────────────────────────────────────────
-
-  function win({ coins = 0 }: { coins?: number }) {
-    k.add([k.rect(k.width(), k.height()), k.color(10, 20, 10), k.pos(0, 0)]);
-
-    k.add([
-      k.text("YOU WIN!", { size: 64 }),
-      k.pos(k.width() / 2, k.height() / 2 - 80),
-      k.anchor("center"),
-      k.color(50, 220, 80),
-    ]);
-
-    k.add([
-      k.text(`coins collected: ${coins}`, { size: 24 }),
-      k.pos(k.width() / 2, k.height() / 2),
-      k.anchor("center"),
-      k.color(200, 200, 200),
-    ]);
-
-    k.add([
-      k.text("SPACE  play again      ESC  menu", { size: 20 }),
-      k.pos(k.width() / 2, k.height() / 2 + 80),
-      k.anchor("center"),
-      k.color(255, 255, 255),
-    ]);
-
-    for (let i = 0; i < 8; i++) {
-      k.add([
-        k.sprite("coin"),
-        k.pos(Math.random() * k.width(), Math.random() * k.height()),
-        k.scale(1.5),
-        k.anchor("center"),
-      ]);
-    }
-
-    k.onKeyPress("space", () => k.go("game", { levelId: 0, coins: 0 }));
-    k.onKeyPress("escape", () => k.go("mainMenu"));
+    k.onKeyPress("escape", () => {
+      if (setId) {
+        EventBus.emit("navigate", `/sets/${setId}`);
+      }
+    });
   }
 
   function lastLevel({ setId, coins = 0 }: { setId?: string; coins?: number }) {
@@ -721,40 +594,12 @@ export function StartGame(canvas: HTMLCanvasElement) {
     k.onKeyPress("space", () => {
       if (setId) {
         EventBus.emit("navigate", `/sets/${setId}`);
-      } else {
-        k.go("mainMenu");
       }
     });
-    k.onKeyPress("escape", () => k.go("mainMenu"));
-  }
-
-  // ── Button helper ───────────────────────────────────────────────────────────
-
-  function menuBtn(
-    label: string,
-    position: ReturnType<(typeof k)["vec2"]>,
-    onClick: () => void
-  ) {
-    const btn = k.add([
-      k.text(label, { size: 28 }),
-      k.pos(position),
-      k.anchor("center"),
-      k.color(255, 255, 255),
-      k.area(),
-    ]);
-
-    btn.onHover(() => {
-      btn.color.r = 255;
-      btn.color.g = 220;
-      btn.color.b = 50;
+    k.onKeyPress("escape", () => {
+      if (setId) {
+        EventBus.emit("navigate", `/sets/${setId}`);
+      }
     });
-    btn.onHoverEnd(() => {
-      btn.color.r = 255;
-      btn.color.g = 255;
-      btn.color.b = 255;
-    });
-    btn.onClick(onClick);
-
-    return btn;
   }
 }

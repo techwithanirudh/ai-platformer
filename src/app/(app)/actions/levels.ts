@@ -1,11 +1,14 @@
 "use server";
 
+import { generateObject } from "ai";
 import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { levelDesignerPrompt } from "@/lib/ai/prompts/level-designer";
+import { provider } from "@/lib/ai/providers";
 import type { Level } from "@/lib/level-schema";
-import { createDefaultLevel } from "@/lib/levels/default-level";
+import { levelSchema } from "@/lib/level-schema";
 import { getSession } from "@/server/auth";
 import { db } from "@/server/db";
 import { levels } from "@/server/db/schema/levels";
@@ -52,7 +55,14 @@ export async function createLevel(formData: FormData) {
 
   const nextOrder = existingLevels[0]?.order ? existingLevels[0].order + 1 : 1;
 
-  const newLevel: Level = createDefaultLevel(setRecord[0].theme);
+  const result = await generateObject({
+    model: provider.languageModel("chat-model"),
+    schema: levelSchema,
+    system: levelDesignerPrompt(),
+    prompt: `Create a brand new ${setRecord[0].theme} level titled "${parsed.data.title}".`,
+  });
+
+  const newLevel: Level = result.object;
   const id = crypto.randomUUID();
 
   await db.insert(levels).values({

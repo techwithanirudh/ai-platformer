@@ -7,13 +7,13 @@ import { sets } from "@/server/db/schema/sets";
 import { LevelBuilder } from "./_components/level-builder";
 
 interface LevelBuilderPageProps {
-  params: { setId: string; levelId: string };
+  params: Promise<{ setId: string; levelId: string }>;
 }
 
 export default async function LevelBuilderPage({
   params,
 }: LevelBuilderPageProps) {
-  const { setId, levelId } = params;
+  const { setId, levelId } = await params;
   const session = await getSession();
   const userId = session?.user?.id ?? "";
 

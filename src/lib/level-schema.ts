@@ -4,7 +4,7 @@ export const levelSchema = z.object({
   levelMap: z
     .array(z.string())
     .describe(
-      "ASCII art rows. '=' grass platform, '-' steel platform, '$' coin, '%' prize box, '^' spike, '>' ghost enemy, '@' player spawn (exactly one). All rows same length."
+      "ASCII art rows. '=' grass platform, '-' steel platform, '$' coin, '%' prize box, '^' spike, '>' ghost enemy, '@' player spawn (exactly one), '!' portal exit (exactly one). All rows same length."
     ),
   tileset: z
     .enum(["jungle", "cave", "castle", "space", "lava"])

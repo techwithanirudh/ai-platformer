@@ -17,6 +17,7 @@ Tile symbols:
 - ^ spike (instant death)
 - > ghost enemy (patrols left-right)
 - @ player spawn point (exactly one)
+- ! portal exit (exactly one)
 - [space] empty air
 
 Level constraints:
@@ -24,6 +25,7 @@ Level constraints:
 - Each row is exactly 24 characters (pad with spaces).
 - Bottom row must be "========================".
 - Place '@' exactly once, and it must be one row above a '=' tile.
+- Place '!' exactly once, reachable from '@'.
 - Always include at least 1 platform above ground to make movement interesting.
 - Ensure at least one path from '@' to the right side of the map is possible.
 

@@ -6,7 +6,7 @@ import { db } from "@/server/db";
 import { sets } from "@/server/db/schema/sets";
 
 interface HomePageProps {
-  searchParams?: { welcome?: string };
+  searchParams?: Promise<{ welcome?: string }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
@@ -19,7 +19,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     .where(eq(sets.userId, userId))
     .orderBy(desc(sets.createdAt));
 
-  const showWelcome = searchParams?.welcome === "1";
+  const params = await searchParams;
+  const showWelcome = params?.welcome === "1";
 
   return (
     <div className="grid gap-8">
