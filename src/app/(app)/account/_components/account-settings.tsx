@@ -161,7 +161,7 @@ function EditNameDialog({ name }: { name: string }) {
 function UserAvatar({ name, src }: { name: string; src: string | null }) {
   if (src) {
     return (
-      <div className='h-16 w-16 overflow-hidden rounded-full border-2 border-border bg-background shadow-shadow'>
+      <div className='h-16 w-16 overflow-hidden rounded-md border-2 border-border bg-background shadow-shadow'>
         <img alt={name} height={64} src={src} width={64} />
       </div>
     )
@@ -176,7 +176,7 @@ function UserAvatar({ name, src }: { name: string; src: string | null }) {
     .toUpperCase()
 
   return (
-    <div className='flex h-16 w-16 items-center justify-center rounded-full border-2 border-border bg-main text-main-foreground shadow-shadow'>
+    <div className='flex h-16 w-16 items-center justify-center rounded-md border-2 border-border bg-main text-main-foreground shadow-shadow'>
       <span className='text-sm uppercase tracking-[0.2em]'>
         {initials || 'MK'}
       </span>

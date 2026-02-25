@@ -127,15 +127,19 @@ function SetSection({
           <CreateLevelDialog
             setId={set.id}
             trigger={
-              <Button
-                aria-label='Make level'
-                className='h-10 gap-2 px-4'
-                type='button'
-                variant='neutral'
-              >
-                <Plus className='size-4' />
-                <span>Make level</span>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label='Make level'
+                    className='h-10 w-10 p-0'
+                    type='button'
+                    variant='neutral'
+                  >
+                    <Plus className='size-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Make level</TooltipContent>
+              </Tooltip>
             }
           />
           {hasMore && (

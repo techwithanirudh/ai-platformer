@@ -1,6 +1,10 @@
 import { notFound } from 'next/navigation'
 import { getSession } from '@/server/auth'
-import { getLevelWithSet } from '@/server/db/queries'
+import {
+  getChatMessages,
+  getLevelWithSet,
+  getOrCreateChatForSet,
+} from '@/server/db/queries'
 import { LevelBuilder } from './_components/level-builder'
 
 interface LevelBuilderPageProps {
@@ -21,6 +25,8 @@ export default async function LevelBuilderPage({
 
   const set = levelData.set
   const level = levelData.level
+  const chat = await getOrCreateChatForSet({ setId, userId })
+  const chatMessages = chat ? await getChatMessages(chat.id) : []
 
   return (
     <div className='flex h-full min-h-0 flex-col gap-4'>
@@ -33,6 +39,7 @@ export default async function LevelBuilderPage({
 
       <div className='min-h-0 flex-1'>
         <LevelBuilder
+          chatId={chat?.id ?? setId}
           initialLevel={{
             levelMap: level.levelMap,
             tileset: level.tileset as
@@ -47,6 +54,11 @@ export default async function LevelBuilderPage({
             accentColor: level.accentColor,
             platformTint: level.platformTint ?? level.accentColor,
           }}
+          initialMessages={chatMessages.map((message) => ({
+            id: message.id,
+            role: message.role as 'user' | 'assistant',
+            parts: [{ type: 'text', text: message.content }],
+          }))}
           initialTitle={level.title}
           levelId={level.id}
           setId={setId}

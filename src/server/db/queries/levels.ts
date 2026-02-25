@@ -46,6 +46,34 @@ export const getLevelWithSet = (userId: string, levelId: string) => {
   )()
 }
 
+export const getLevelForUser = async (input: {
+  levelId: string
+  userId: string
+}) => {
+  const levelRows = await db
+    .select()
+    .from(levels)
+    .where(eq(levels.id, input.levelId))
+    .limit(1)
+
+  if (levelRows.length === 0) {
+    return null
+  }
+
+  const level = levelRows[0]
+  const setRows = await db
+    .select({ id: sets.id })
+    .from(sets)
+    .where(and(eq(sets.id, level.setId), eq(sets.userId, input.userId)))
+    .limit(1)
+
+  if (setRows.length === 0) {
+    return null
+  }
+
+  return level
+}
+
 export const getOwnedSetTheme = async (input: {
   setId: string
   userId: string
